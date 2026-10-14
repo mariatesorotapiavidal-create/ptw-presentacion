@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IA en Acción · Panel</title>
+<meta name="description" content="Fondo para la ronda de preguntas de IA en Acción — NXTEP en Perú Tech Week 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,700;0,800;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Lexend+Zetta:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#2563EB;
+  --red:#EF4B2F;
+  --orange:#F7941D;
+  --bg:#000000;
+  --fg:#FFFFFF;
+  --fg-2:rgba(255,255,255,.72);
+  --fg-3:rgba(255,255,255,.48);
+  --line:rgba(255,255,255,.12);
+  --grad:linear-gradient(90deg,var(--blue) 0%,var(--red) 50%,var(--blue) 100%);
+  --grad-edge:linear-gradient(90deg,var(--blue),var(--red));
+  --grad-soft:linear-gradient(135deg,rgba(239,75,47,.16),rgba(37,99,235,.16));
+  --pad:clamp(16px,4.2vw,88px);
+  --sans:"Inter Tight",Arial,Helvetica,sans-serif;
+  --wide:"Lexend Zetta","Inter Tight",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-snap-type:y mandatory;scroll-behavior:smooth;background:var(--bg)}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.no-cursor,body.no-cursor *{cursor:none!important}
+img{display:block;max-width:100%}
+
+/* ---------- Recuadros de la identidad PTW ---------- */
+/* 1) caja sólida con degradado azul–rojo–azul, esquinas rectas (título) */
+.gbox{display:inline-block;background:var(--grad);color:#fff;font-weight:800;letter-spacing:-.045em;line-height:1;position:relative;overflow:hidden}
+.gbox::after{ /* brillo que recorre la caja */
+  content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);
+  transform:translateX(-120%);animation:shine 7s ease-in-out infinite}
+@keyframes shine{0%,60%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+/* 2) rectángulo con borde degradado azul→rojo, esquinas rectas (fecha, etiquetas) */
+.obox,.opill{position:relative;display:inline-flex;align-items:center;gap:.6em}
+.obox::before,.opill::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;background:var(--grad-edge);pointer-events:none;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+/* 3) píldora con borde degradado (como en las tarjetas de speakers) */
+.opill{border-radius:999px}
+
+/* ---------- Fondo fijo: red de nodos ---------- */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:#000}
+.bg::before{ /* retícula de puntos */
+  content:"";position:absolute;inset:0;
+  background-image:radial-gradient(rgba(255,255,255,.10) 1px,transparent 1.2px);
+  background-size:28px 28px;
+  -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 50%,#000 10%,transparent 75%);
+          mask-image:radial-gradient(ellipse 70% 60% at 50% 50%,#000 10%,transparent 75%);
+  opacity:.6;
+}
+.net{position:absolute}
+.net-tr{top:0;right:0;width:52vw;height:62vh;
+  -webkit-mask-image:radial-gradient(circle at 100% 0%,#000 25%,transparent 72%);
+          mask-image:radial-gradient(circle at 100% 0%,#000 25%,transparent 72%)}
+.net-bl{bottom:0;left:0;width:42vw;height:56vh;
+  -webkit-mask-image:radial-gradient(circle at 0% 100%,#000 25%,transparent 72%);
+          mask-image:radial-gradient(circle at 0% 100%,#000 25%,transparent 72%)}
+
+/* ---------- Pantallas ---------- */
+.screen{position:relative;z-index:1;min-height:100vh;min-height:100svh;height:100vh;scroll-snap-align:start;
+  padding:calc(var(--pad)*.9) var(--pad);display:flex;flex-direction:column;overflow:hidden}
+
+/* barra superior */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:22px}
+.brand img{height:clamp(18px,2vw,38px);width:auto}
+.brand .sep{width:1px;height:clamp(18px,1.9vw,34px);background:rgba(255,255,255,.35)}
+.live{font-family:var(--mono);font-size:clamp(11px,.85vw,15px);letter-spacing:.14em;text-transform:uppercase;color:var(--fg);padding:11px 18px;background:#000}
+.live i{width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 0 rgba(239,75,47,.6);animation:pulse 1.8s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(239,75,47,0)}100%{box-shadow:0 0 0 0 rgba(239,75,47,0)}}
+
+.mono{font-family:var(--mono);font-size:clamp(11px,.8vw,15px);letter-spacing:.16em;text-transform:uppercase;color:var(--fg-2)}
+
+/* ---------- 1 · Hero ---------- */
+.hero-body{flex:1;display:flex;flex-direction:column;justify-content:center}
+.hero-head{display:flex;flex-direction:column;align-items:center;text-align:center}
+.eyebrow{font-style:italic;font-weight:400;font-size:clamp(22px,2.6vw,52px);letter-spacing:-.02em;color:var(--fg-2);margin-bottom:.35em}
+.hero-title{font-size:clamp(56px,9.6vw,190px);padding:.12em .28em .16em}
+.hero-sub{font-weight:700;font-size:clamp(22px,2.7vw,54px);letter-spacing:-.03em;margin-top:.45em}
+.hero-sub em{font-style:normal;color:var(--red)}
+.concept{margin-top:clamp(28px,5vh,64px);max-width:46ch;font-size:clamp(16px,1.35vw,26px);line-height:1.45;color:var(--fg-2)}
+.concept b{color:var(--fg);font-weight:700}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:clamp(16px,1.6vw,32px);margin-top:clamp(22px,4vh,48px)}
+.date{font-weight:800;font-size:clamp(24px,2.6vw,52px);letter-spacing:-.05em;color:var(--red)}
+.meta .obox{font-weight:700;font-size:clamp(14px,1.1vw,22px);letter-spacing:.08em;text-transform:uppercase;padding:.85em 1.5em}
+.arrow{position:absolute;right:calc(var(--pad)*1.4);bottom:16vh;width:clamp(70px,9vw,170px);opacity:.95;animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translate(8px,-10px)}}
+
+.ticker{position:absolute;left:0;right:0;bottom:0;background:var(--grad);color:#fff;overflow:hidden;white-space:nowrap;padding:clamp(8px,1.1vh,14px) 0}
+.ticker div{display:inline-block;font-weight:800;font-size:clamp(12px,.95vw,18px);letter-spacing:.16em;animation:marquee 40s linear infinite}
+@keyframes marquee{to{transform:translateX(-50%)}}
+
+/* ---------- 2 · Speakers ---------- */
+.sp-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-top:clamp(14px,2.6vh,36px)}
+.sp-head h2{font-weight:800;font-size:clamp(30px,3.4vw,66px);letter-spacing:-.045em;line-height:1;display:flex;align-items:center;gap:.35em}
+.sp-head h2 .gbox{padding:.08em .22em .12em}
+.sp-head h2 .wide{font-family:var(--wide);font-weight:300;font-size:.42em;letter-spacing:0;text-transform:uppercase}
+.name{font-family:var(--wide);font-weight:400;font-size:clamp(17px,1.55vw,30px);letter-spacing:0;line-height:1.1;text-transform:uppercase}
+.role{font-family:var(--wide);font-weight:300;font-size:clamp(10px,.68vw,13px);line-height:1.55;color:var(--red);margin-top:.9em}
+.ach{list-style:none;margin-top:1.1em;display:flex;flex-direction:column;gap:.55em;font-size:clamp(13px,.94vw,18px);line-height:1.35;color:var(--fg-2)}
+.ach li{position:relative;padding-left:1.25em}
+.ach li::before{content:"";position:absolute;left:0;top:.45em;width:.5em;height:.5em;background:var(--grad-edge);transform:rotate(45deg)}
+.ach b{color:var(--fg);font-weight:700}
+
+.sp-hint{position:absolute;left:50%;bottom:clamp(14px,2.4vh,30px);transform:translateX(-50%);transition:opacity .4s}
+.sp-hint.done{opacity:0}
+
+/* ---------- 2 · Speakers (detalle, mismo formato redondo que el resumen) ---------- */
+.sp-full .sm-grid{margin-top:clamp(20px,4vh,56px)}
+.sp-full .sm{width:clamp(240px,27vw,500px)}
+.sp-full .sm-photo{--s:clamp(130px,12.5vw,240px)}
+.sp-full .ach{text-align:left;width:100%;margin-top:1.4em}
+/* revelado por clic: un speaker a la vez */
+.spk{opacity:0;transform:translateY(40px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.spk.shown{opacity:1;transform:none}
+.spk .sm-photo{transform:scale(.8);transition:transform 1s cubic-bezier(.2,.9,.25,1.15)}
+.spk.shown .sm-photo{transform:none}
+.spk .name,.spk .role,.spk .ach li{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+.spk.shown .name,.spk.shown .role,.spk.shown .ach li{opacity:1;transform:none}
+.spk.shown .name{transition-delay:.25s}
+.spk.shown .role{transition-delay:.35s}
+.spk.shown .ach li{transition-delay:calc(.5s + var(--i,0)*.12s)}
+
+/* ---------- 2b · Speakers resumido ---------- */
+.sm-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.sm-body .sp-head{justify-content:center;margin-top:0}
+.sm-grid{display:flex;justify-content:center;gap:clamp(28px,5vw,110px);margin-top:clamp(28px,6vh,80px)}
+.sm{display:flex;flex-direction:column;align-items:center;width:clamp(220px,24vw,460px)}
+.sm-photo{--s:clamp(160px,17vw,330px);position:relative;flex:none;width:var(--s);height:var(--s);border-radius:50%;padding:4px;background:var(--grad-edge)}
+.sm-photo img{position:absolute;inset:4px;width:calc(100% - 8px);height:calc(100% - 8px);border-radius:50%;object-fit:cover;object-position:50% 18%;background:#111}
+.sm-photo .co{position:absolute;left:50%;bottom:-.2em;transform:translateX(-50%);white-space:nowrap;font-family:var(--mono);font-size:clamp(11px,.8vw,14px);letter-spacing:.14em;text-transform:uppercase;color:#fff;background:#000;padding:8px 14px}
+.sm .name{margin-top:1.3em}
+.sm .role{font-size:clamp(11px,.8vw,15px)}
+
+/* ---------- 2c · Preguntas ---------- */
+.q-panel{display:flex;justify-content:center;gap:clamp(20px,3.6vw,72px);margin-top:clamp(14px,2.6vh,34px);padding-bottom:clamp(14px,2.4vh,30px);border-bottom:1px solid var(--line)}
+.qp{display:flex;align-items:center;gap:clamp(10px,.9vw,16px);text-align:left}
+.qp .sm-photo{--s:clamp(54px,4.6vw,88px);padding:3px}
+.qp .sm-photo img{inset:3px;width:calc(100% - 6px);height:calc(100% - 6px)}
+.qp .name{font-size:clamp(12px,.95vw,18px)}
+.qp .role{font-size:clamp(9px,.62vw,12px);margin-top:.5em;max-width:30ch}
+.qp .co{display:block;font-family:var(--mono);font-size:clamp(9px,.62vw,12px);letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3);margin-top:.5em}
+.q-body{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.q-meta{display:flex;align-items:center;gap:18px}
+.q-meta .obox{padding:.85em 1.4em;color:var(--fg)}
+.q-meta .q-cat{color:var(--red)}
+.q-stage{display:grid;width:100%;margin-top:clamp(20px,4vh,52px)}
+.q{grid-area:1/1;align-self:center;justify-self:center;max-width:26ch;font-weight:800;font-size:clamp(32px,3.9vw,80px);letter-spacing:-.04em;line-height:1.08;
+  opacity:0;transform:translateY(36px);transition:opacity .5s ease,transform .7s cubic-bezier(.2,.7,.2,1);pointer-events:none}
+.q.past{transform:translateY(-36px)}
+.q.on{opacity:1;transform:none;transition-delay:.18s}
+.q-steps{display:flex;gap:6px;margin-top:clamp(24px,5vh,64px)}
+.q-steps i{display:block;width:clamp(14px,1.6vw,32px);height:5px;background:rgba(255,255,255,.14);transition:background .4s}
+.q-steps i.on{background:var(--grad-edge)}
+
+/* ---------- 3–5 · Dinámicas ---------- */
+.dyn-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative}
+.bignum{position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);font-weight:800;font-size:clamp(220px,44vw,860px);letter-spacing:-.07em;line-height:1;
+  color:transparent;-webkit-text-stroke:2px rgba(37,99,235,.28);user-select:none;pointer-events:none}
+.dyn-label{position:relative;padding:.85em 1.4em;color:var(--fg)}
+.dyn-title{position:relative;font-weight:800;font-size:clamp(54px,8.4vw,170px);letter-spacing:-.055em;line-height:1;margin-top:.3em}
+.dyn-title span{color:var(--red)}
+.dyn-tag{position:relative;margin-top:.35em;font-size:clamp(40px,5.6vw,116px);padding:.12em .32em .16em}
+.steps{position:relative;display:flex;gap:10px;margin-top:clamp(28px,6vh,72px)}
+.steps i{display:block;width:clamp(40px,4.6vw,90px);height:6px;background:rgba(255,255,255,.14)}
+.steps i.on{background:var(--grad-edge)}
+
+/* ---------- 6 · Síguenos ---------- */
+.fol-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.fol-body .obox{padding:.85em 1.4em;color:var(--fg)}
+.fol-title{font-weight:800;font-size:clamp(32px,4.4vw,88px);letter-spacing:-.04em;line-height:1.05;margin-top:.5em}
+.fol-title .gbox{padding:.02em .22em .1em}
+.fol-title .accent{color:var(--red)}
+.quote-title{font-size:clamp(44px,6.4vw,132px);line-height:1.08;margin-top:.45em}
+.fol-sub{margin-top:.9em;font-size:clamp(16px,1.35vw,26px);color:var(--fg-2)}
+.qrs{display:flex;justify-content:center;gap:clamp(20px,3.4vw,72px);margin-top:clamp(24px,5vh,64px)}
+.qr{display:flex;flex-direction:column;align-items:center;gap:18px}
+.qr-code{position:relative;width:clamp(150px,13vw,260px);aspect-ratio:1;padding:16px;background:#fff;outline:2px solid transparent}
+.qr-code::before{content:"";position:absolute;inset:-8px;padding:2px;background:var(--grad-edge);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.qr-code img{width:100%;height:100%}
+.qr figcaption{display:flex;align-items:center;gap:12px;text-align:left;margin-top:8px}
+.qr figcaption svg{width:clamp(26px,2vw,38px);height:auto;color:#fff}
+.qr figcaption span{font-size:clamp(13px,.95vw,18px);color:var(--fg-2);line-height:1.25}
+.qr figcaption b{display:block;font-size:clamp(16px,1.3vw,25px);color:var(--fg);letter-spacing:-.02em}
+
+/* cronómetro de la dinámica 1 */
+.dyn-sm{display:flex;align-items:center;gap:.35em;font-size:clamp(36px,4.4vw,88px)}
+.dyn-sm .dyn-tag{margin-top:0;font-size:.8em;padding:.08em .28em .12em;color:#fff}
+#s4 .bignum{display:none}
+.timer{position:relative;display:flex;align-items:center;gap:clamp(16px,1.6vw,32px);margin-top:clamp(12px,3vh,40px)}
+.timer-num{font-weight:800;font-size:clamp(120px,19vw,380px);letter-spacing:-.05em;line-height:.9;font-variant-numeric:tabular-nums;color:#fff}
+.timer.done .timer-num{color:var(--red);animation:blinkred .5s steps(1) infinite}
+@keyframes blinkred{50%{opacity:.15}}
+.timer-btn{position:absolute;left:100%;margin-left:clamp(16px,1.6vw,32px);width:clamp(44px,3.4vw,64px);height:clamp(44px,3.4vw,64px);border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;display:grid;place-items:center;transition:background .25s,transform .15s}
+.timer-btn::before{content:"";position:absolute;inset:0;border-radius:50%;padding:2px;background:var(--grad-edge);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.timer-btn:hover{background:rgba(255,255,255,.16)}
+.timer-btn:active{transform:scale(.94)}
+.timer-btn svg{width:45%;height:45%}
+.timer-btn .i-pause,.timer.running .timer-btn .i-play{display:none}
+.timer.running .timer-btn .i-pause{display:block}
+.timer.done .timer-btn{opacity:.3;pointer-events:none}
+
+/* ---------- Becas DMC ---------- */
+.dmc-body{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.dmc-body .obox{padding:.85em 1.4em;color:var(--fg)}
+.dmc-title{font-weight:800;font-size:clamp(30px,3.6vw,72px);letter-spacing:-.045em;line-height:1.08;margin-top:.45em}
+.dmc-title .gbox{padding:.02em .22em .1em}
+.dmc-title .accent{color:var(--red)}
+.dmc-cols{display:grid;grid-template-columns:1.15fr 1fr;gap:clamp(24px,3.4vw,72px);width:100%;max-width:1640px;margin-top:clamp(20px,4vh,52px);text-align:left;align-items:start}
+.dmc-col h3{display:flex;align-items:baseline;justify-content:space-between;gap:16px;font-weight:800;font-size:clamp(20px,1.7vw,34px);letter-spacing:-.03em;padding-bottom:.45em;margin-bottom:.2em;border-bottom:2px solid;border-image:var(--grad-edge) 1}
+.dmc-col h3 .mono{font-weight:400;color:var(--fg-3)}
+.dmc-list{list-style:none}
+.dmc-list li{display:flex;align-items:baseline;justify-content:space-between;gap:20px;padding:clamp(5px,.75vh,11px) 0;border-bottom:1px solid var(--line);font-size:clamp(13px,1vw,20px);line-height:1.3;color:var(--fg-2)}
+.dmc-list li b{color:var(--fg);font-weight:500}
+.dmc-list li time{flex:none;font-family:var(--mono);font-size:.82em;letter-spacing:.06em;color:var(--red)}
+
+/* ---------- Encuesta ---------- */
+.enc-title{font-size:clamp(40px,5.2vw,104px);line-height:1.08;margin-top:0}
+.qr-big{width:clamp(200px,17vw,330px);padding:clamp(12px,1vw,18px)}
+
+/* ---------- UI de navegación ---------- */
+.dots{position:fixed;right:clamp(10px,1.4vw,28px);top:50%;transform:translateY(-50%);z-index:5;display:flex;flex-direction:column;gap:12px;transition:opacity .4s}
+.dots button{width:10px;height:10px;border-radius:50%;border:0;background:rgba(255,255,255,.25);cursor:pointer;transition:.3s}
+.dots button.on{background:var(--red);height:28px;border-radius:6px}
+body.clean .dots{opacity:0;pointer-events:none}
+
+/* ---------- Animación de entrada ---------- */
+.rv{opacity:0;transform:translateY(24px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--d,0)*110ms)}
+.screen.is-in .rv{opacity:1;transform:none}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .rv{transition:none;opacity:1;transform:none}
+  .gbox::after,.ticker div,.arrow,.live i{animation:none}
+  .spk,.spk *,.q{transition:none!important}
+}
+
+/* ---------- Pantallas pequeñas ---------- */
+@media (max-width:900px){
+  html{scroll-snap-type:none}
+  .screen{height:auto;min-height:100svh;padding:24px 16px 72px}
+  .hero-body{max-width:none}
+  .arrow{display:none}
+  .sm-grid{flex-direction:column;gap:48px}
+  .q-panel{flex-direction:column;align-items:flex-start;gap:12px}
+  .qrs{flex-direction:column;align-items:center;gap:48px}
+  .dmc-cols{grid-template-columns:1fr}
+  .dots{display:none}
+  .live{font-size:10px;padding:8px 12px}
+  .brand{gap:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div id="net-tr" class="net net-tr"></div>
+  <div id="net-bl" class="net net-bl"></div>
+</div>
+
+<!-- 1 · HERO -->
+<section class="screen" id="s1" data-label="IA en Acción">
+  <header class="top rv">
+    <div class="brand"><img src="img/nxtep.png" alt="NXTEP"><span class="sep"></span><img src="img/ptw-h.png" alt="Perú Tech Week 2026"></div>
+    <div class="live opill"><i></i>Ronda de preguntas</div>
+  </header>
+
+  <div class="hero-body">
+    <div class="hero-head">
+      <p class="eyebrow rv" style="--d:1">Casos reales de</p>
+      <h1 class="rv" style="--d:2"><span class="gbox hero-title">IA en Acción</span></h1>
+      <p class="hero-sub rv" style="--d:3">en empresas <em>líderes del Perú</em></p>
+    </div>
+    <p class="concept rv" style="--d:4">La IA está transformando industrias. <b>Conoce cómo.</b></p>
+    <div class="meta rv" style="--d:5">
+      <span class="date">14 de octubre</span>
+      <span class="obox">Panel + Networking</span>
+    </div>
+  </div>
+
+  <img class="arrow" src="img/flecha.png" alt="" aria-hidden="true">
+
+  <div class="ticker" aria-hidden="true"><div>
+    IA EN ACCIÓN · PERÚ TECH WEEK 2026 · NXTEP · CASOS REALES DE IA · IA EN ACCIÓN · PERÚ TECH WEEK 2026 · NXTEP · CASOS REALES DE IA ·&nbsp;
+    IA EN ACCIÓN · PERÚ TECH WEEK 2026 · NXTEP · CASOS REALES DE IA · IA EN ACCIÓN · PERÚ TECH WEEK 2026 · NXTEP · CASOS REALES DE IA ·&nbsp;
+  </div></div>
+</section>
+
+<!-- DINÁMICA 1 -->
+<section class="screen" id="s4" data-label="Dinámica 1">
+  <header class="top rv">
+    <div class="brand"><img src="img/nxtep.png" alt="NXTEP"><span class="sep"></span><img src="img/ptw-h.png" alt="Perú Tech Week 2026"></div>
+    <div class="live opill"><i></i>Networking</div>
+  </header>
+  <div class="dyn-body">
+    <span class="bignum" aria-hidden="true">01</span>
+    <p class="rv" style="--d:1"><span class="mono obox dyn-label">Dinámica 01 de 03</span></p>
+    <h2 class="dyn-title dyn-sm rv" style="--d:2">Dinámica <span>1</span> <span class="gbox dyn-tag">Networking</span></h2>
+    <div class="timer rv" style="--d:3">
+      <span class="timer-num" id="timer-num" role="timer" aria-live="off">03:00</span>
+      <button class="timer-btn" id="timer-btn" type="button" aria-label="Iniciar cronómetro" title="Play / pausa (P)">
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5.5v13l11-6.5z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+      </button>
+    </div>
+    <div class="steps rv" style="--d:4" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+  </div>
+</section>
+
+<!-- 2 · SPEAKERS -->
+<section class="screen" id="s2" data-label="Speakers">
+  <header class="top rv">
+    <div class="brand"><img src="img/nxtep.png" alt="NXTEP"><span class="sep"></span><img src="img/ptw-h.png" alt="Perú Tech Week 2026"></div>
+    <div class="live opill"><i></i>Ronda de preguntas</div>
+  </header>
+  <div class="sm-body sp-full">
+    <div class="sp-head"><h2 class="rv" style="--d:1"><span class="gbox">IA en Acción</span><span class="wide">Speakers</span></h2></div>
+    <div class="sm-grid">
+      <figure class="sm spk">
+        <div class="sm-photo"><img src="img/diego-asmat.jpg" alt="Diego Asmat"><span class="co">BCP</span></div>
+        <h3 class="name">Diego Asmat</h3>
+        <p class="role">Gerente de Iniciativas<br>Estratégicas de IA</p>
+        <ul class="ach">
+          <li style="--i:0">Lidera las iniciativas estratégicas de IA del <b>BCP</b></li>
+          <li style="--i:1">Impulsa la <b>reinvención de procesos</b> con IA</li>
+          <li style="--i:2">Crea <b>nuevas experiencias</b> para los clientes</li>
+          <li style="--i:3">Genera <b>valor de negocio</b> con Inteligencia Artificial</li>
+        </ul>
+      </figure>
+      <figure class="sm spk">
+        <div class="sm-photo"><img src="img/diego-hinojosa.jpg" alt="Diego Hinojosa"><span class="co">Credicorp</span></div>
+        <h3 class="name">Diego F. Hinojosa</h3>
+        <p class="role">Product Owner</p>
+        <ul class="ach">
+          <li style="--i:0">Lideró el frente de IA &amp; Tech en <b>Mibanco por WhatsApp</b></li>
+          <li style="--i:1">Impulsó el desarrollo de <b>agentes inteligentes</b></li>
+          <li style="--i:2">Experiencias financieras <b>más simples, personalizadas y escalables</b></li>
+        </ul>
+      </figure>
+      <figure class="sm spk">
+        <div class="sm-photo"><img src="img/marleny-barrueta-sp.jpg" alt="Marleny Barrueta" style="object-position:50% 22%"><span class="co">Antamina</span></div>
+        <h3 class="name">Marleny Barrueta</h3>
+        <p class="role">Head of Advanced Analytics &amp; AI Center of Excellence</p>
+        <ul class="ach">
+          <li style="--i:0">Autora de <b>“Refueling”</b>, solución de IA presentada en <b>PERUMIN 37</b></li>
+          <li style="--i:1">Lleva <b>modelos predictivos</b> a la operación minera</li>
+          <li style="--i:2"><b>+15 años</b> mejorando productividad y fiabilidad en mina, planta y puerto</li>
+          <li style="--i:3">Voz activa en el <b>Jueves Minero</b> del IIMP</li>
+        </ul>
+      </figure>
+    </div>
+  </div>
+  <p class="sp-hint mono" aria-hidden="true">Clic para presentar al siguiente speaker</p>
+</section>
+
+<!-- 2b · SPEAKERS RESUMIDO -->
+<section class="screen" id="s2b" data-label="Speakers (resumen)">
+  <header class="top rv">
+    <div class="brand"><img src="img/nxtep.png" alt="NXTEP"><span class="sep"></span><img src="img/ptw-h.png" alt="Perú Tech Week 2026"></div>
+    <div class="live opill"><i></i>Ronda de preguntas</div>
+  </header>
+  <div class="sm-body">
+    <div class="sp-head"><h2 class="rv" style="--d:1"><span class="gbox">IA en Acción</span><span class="wide">Speakers</span></h2></div>
+    <div class="sm-grid">
+      <figure class="sm rv" style="--d:2">
+        <div class="sm-photo"><img src="img/diego-asmat.jpg" alt="Diego Asmat"><span class="co">BCP</span></div>
+        <h3 class="name">Diego Asmat</h3>
+        <p class="role">Gerente de Iniciativas<br>Estratégicas de IA</p>
+      </figure>
+      <figure class="sm rv" style="--d:3">
+        <div class="sm-photo"><img src="img/diego-hinojosa.jpg" alt="Diego Hinojosa"><span class="co">Credicorp</span></div>
+        <h3 class="name">Diego F. Hinojosa</h3>
+        <p class="role">Product Owner</p>
+      </figure>
+      <figure class="sm rv" style="--d:4">
+        <div class="sm-photo"><img src="img/marleny-barrueta-sp.jpg" alt="Marleny Barrueta" style="object-position:50% 22%"><span class="co">Antamina</span></div>
+        <h3 class="name">Marleny Barrueta</h3>
+        <p class="role">Head of Advanced Analytics &amp; AI Center of Excellence</p>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- 2c · PREGUNTAS (un clic = una pregunta) -->
+<section class="screen" id="s2c" data-label="Preguntas">
+  <header class="top rv">
+    <div class="brand"><img src="img/nxtep.png" alt="NXTEP"><span class="sep"></span><img src="img/ptw-h.png" alt="Perú Tech Week 2026"></div>
+    <div class="live opill"><i></i>Ronda de preguntas</div>
+  </header>
+  <div class="q-panel rv" style="--d:1">
+      <div class="qp">
+        <div class="sm-photo"><img src="img/diego-asmat.jpg" alt="Diego Asmat"></div>
+        <div><h3 class="name">Diego Asmat</h3><p class="role">Gerente de Iniciativas Estratégicas de IA</p><span class="co">BCP</span></div>
+      </div>
+      <div class="qp">
+        <div class="sm-photo"><img src="img/diego-hinojosa.jpg" alt="Diego Hinojosa"></div>
+        <div><h3 class="name">Diego F. Hinojosa</h3><p class="role">Product Owner</p><span class="co">Credicorp</span></div>
+      </div>
+      <div class="qp">
+        <div class="sm-photo"><img src="img/marleny-barrueta-sp.jpg" alt="Marleny Barrueta" style="object-position:50% 22%"></div>
+        <div><h3 class="name">Marleny Barrueta</h3><p class="role">Head of Advanced Analytics &amp; AI Center of Excellence</p><span class="co">Antamina</span></div>
+      </div>
+  </div>
+  <div class="q-body">
+    <div class="q-meta rv" style="--d:2"><span class="mono obox">Pregunta <span class="q-num">01</span> / 15</span><span class="mono q-cat"></span></div>
+    <div class="q-stage">
+      <p class="q" data-cat="Apertura">¿Cuál es el caso de uso de IA que hoy genera más valor real en su organización y qué lo hizo funcionar?</p>
+      <p class="q" data-cat="Apertura">¿Cómo explicarían, en una frase, la diferencia entre “hacer pruebas con IA” y “tener IA en producción”?</p>
+      <p class="q" data-cat="De piloto a escala">¿Por qué creen que tantos pilotos de IA no llegan a producción? ¿Qué hicieron distinto para pasar esa barrera?</p>
+      <p class="q" data-cat="De piloto a escala">¿Cómo deciden qué casos de uso priorizar? ¿Qué criterios usan para decir “esto sí, esto no”?</p>
+      <p class="q" data-cat="De piloto a escala">¿Qué rol juegan los datos? ¿Fue más difícil el modelo o tener datos listos y confiables?</p>
+      <p class="q" data-cat="Gobierno, riesgo y confianza">¿Cómo manejan la gobernanza de IA (calidad, sesgos, explicabilidad, privacidad) en un sector regulado o con información sensible?</p>
+      <p class="q" data-cat="Gobierno, riesgo y confianza">¿Dónde ponen el límite entre lo que decide la IA y lo que sigue decidiendo una persona? ¿Cómo es el “humano en el loop” en la práctica?</p>
+      <p class="q" data-cat="Gobierno, riesgo y confianza">¿Cómo miden que un modelo sigue funcionando bien después de salir a producción?</p>
+      <p class="q" data-cat="Personas y cultura">¿Cómo cambió el trabajo de los equipos con la IA? ¿Qué habilidades están buscando hoy que hace dos años no pedían?</p>
+      <p class="q" data-cat="Personas y cultura">¿Cómo logran adopción real en áreas de negocio que no son técnicas? ¿Qué resistencias encontraron?</p>
+      <p class="q" data-cat="IA generativa y agentes">¿Qué expectativa sobre la IA generativa se ha desinflado y cuál ha superado lo esperado?</p>
+      <p class="q" data-cat="IA generativa y agentes">¿Cómo equilibran construir con talento interno, comprar soluciones y trabajar con proveedores o startups?</p>
+      <p class="q" data-cat="Mirada al futuro y cierre">¿Qué cambiará más en los próximos 2 o 3 años en cómo operan las empresas peruanas con IA?</p>
+      <p class="q" data-cat="Mirada al futuro y cierre">¿Qué consejo darían a una empresa mediana que recién empieza y tiene presupuesto limitado?</p>
+      <p class="q" data-cat="Mirada al futuro y cierre">Cierre: una recomendación concreta que alguien en la audiencia pueda aplicar el lunes.</p>
+    </div>
+    <div class="q-steps rv" style="--d:3" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+</section>
+
+<!-- 3 · FRASE -->
+<section class="screen" id="s3" data-label="Conectar">
+  <header class="top rv">
+    <div class="brand"><img src="img/nxtep.png" alt="NXTEP"><span class="sep"></span><img src="img/ptw-h.png" alt="Perú Tech Week 2026"></div>
+    <div class="live opill"><i></i>Networking</div>
+  </header>
+  <div class="fol-body">
+    <p class="rv" style="--d:1"><span class="mono obox">IA en Acción · Perú Tech Week 2026</span></p>
+    <h2 class="fol-title quote-title rv" style="--d:2">No es solo venir a escuchar.<br>Es venir a <span class="gbox">conectar.</span></h2>
+  </div>
+</section>
+
+<section class="screen" id="s5" data-label="Dinámica 2">
+  <header class="top rv">
+    <div class="brand"><img src="img/nxtep.png" alt="NXTEP"><span class="sep"></span><img src="img/ptw-h.png" alt="Perú Tech Week 2026"></div>
+    <div class="live opill"><i></i>Networking</div>
+  </header>
+  <div class="dyn-body">
+    <span class="bignum" aria-hidden="true">02</span>
+    <p class="rv" style="--d:1"><span class="mono obox dyn-label">Dinámica 02 de 03</span></p>
+    <h2 class="dyn-title rv" style="--d:2">Dinámica <span>2</span></h2>
+    <p class="rv" style="--d:3"><span class="gbox dyn-tag">Networking</span></p>
+    <div class="steps rv" style="--d:4" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></div>
+  </div>
+</section>
+
+<!-- BECAS DMC -->
+<section class="screen" id="s-dmc" data-label="Becas DMC">
+  <header class="top rv">
+    <div class="brand"><img src="img/nxtep.png" alt="NXTEP"><span class="sep"></span><img src="img/ptw-h.png" alt="Perú Tech Week 2026"></div>
+    <div class="live opill"><i></i>Sorteo</div>
+  </header>
+  <div class="dmc-body">
+    <p class="rv" style="--d:1"><span class="mono obox">Sorteo · Becas DMC</span></p>
+    <h2 class="dmc-title rv" style="--d:2">Participa por <span class="gbox">3 becas al 100%</span><br>gracias a <span class="accent">DMC Institute</span></h2>
+    <div class="dmc-cols">
+      <div class="dmc-col rv" style="--d:3">
+        <h3>Línea Data <span class="mono">Especializaciones</span></h3>
+        <ul class="dmc-list">
+          <li><b>Diseño e implementación de Chatbots</b><time>26/10</time></li>
+          <li><b>Power BI potenciado con IA</b><time>28/10</time></li>
+          <li><b>SQL Server potenciado con IA</b><time>28/10</time></li>
+          <li><b>Azure Data Engineering</b><time>28/10</time></li>
+          <li><b>AI Web Full Stack con React &amp; Next.js</b><time>28/10</time></li>
+          <li><b>Flutter Mobile Apps con IA</b><time>28/10</time></li>
+          <li><b>Arquitectura y bases de datos con IA para aplicaciones modernas</b><time>28/10</time></li>
+          <li><b>Python for Analytics</b><time>29/10</time></li>
+          <li><b>Automatización e IA con Microsoft Power Platform</b><time>29/10</time></li>
+          <li><b>Credit Risk Scoring Analytics</b><time>29/10</time></li>
+          <li><b>IA para Ejecutivos</b><time>29/10</time></li>
+        </ul>
+      </div>
+      <div class="dmc-col rv" style="--d:4">
+        <h3>Línea Dev <span class="mono">Especializaciones</span></h3>
+        <ul class="dmc-list">
+          <li><b>AI Web Full Stack con React &amp; Next.js</b><time>28/10</time></li>
+          <li><b>Arquitectura y bases de datos con IA para aplicaciones modernas</b><time>28/10</time></li>
+          <li><b>Digital Twins aplicados a procesos de negocio</b><time>28/10</time></li>
+          <li><b>Claude para Ejecutivos</b><time>28/10</time></li>
+          <li><b>IA para Ejecutivos</b><time>29/10</time></li>
+          <li><b>QA &amp; Testing Engineering con IA</b><time>29/10</time></li>
+        </ul>
+        <p class="mono" style="margin-top:1.4em;color:var(--fg-3)">Inicio · octubre 2026</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s6" data-label="Dinámica 3">
+  <header class="top rv">
+    <div class="brand"><img src="img/nxtep.png" alt="NXTEP"><span class="sep"></span><img src="img/ptw-h.png" alt="Perú Tech Week 2026"></div>
+    <div class="live opill"><i></i>Networking</div>
+  </header>
+  <div class="dyn-body">
+    <span class="bignum" aria-hidden="true">03</span>
+    <p class="rv" style="--d:1"><span class="mono obox dyn-label">Dinámica 03 de 03</span></p>
+    <h2 class="dyn-title rv" style="--d:2">Dinámica <span>3</span></h2>
+    <p class="rv" style="--d:3"><span class="gbox dyn-tag">Networking</span></p>
+    <div class="steps rv" style="--d:4" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+  </div>
+</section>
+
+<!-- 7 · SÍGUENOS -->
+<section class="screen" id="s7" data-label="Síguenos">
+  <header class="top rv">
+    <div class="brand"><img src="img/nxtep.png" alt="NXTEP"><span class="sep"></span><img src="img/ptw-h.png" alt="Perú Tech Week 2026"></div>
+    <div class="live opill"><i></i>Sigamos conectados</div>
+  </header>
+  <div class="fol-body">
+    <p class="rv" style="--d:1"><span class="mono obox">La conversación sigue</span></p>
+    <h2 class="fol-title rv" style="--d:2">Síguenos para enterarte primero<br>y mantenernos <span class="accent">conectados</span></h2>
+    <p class="fol-sub rv" style="--d:3">Escanea y únete a la comunidad NXTEP</p>
+
+    <div class="qrs">
+      <figure class="qr rv" style="--d:4">
+        <div class="qr-code"><img src="img/qr-whatsapp.png" alt="QR del grupo de WhatsApp"></div>
+        <figcaption>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3Z"/></svg>
+          <span><b>WhatsApp</b>Únete al grupo</span>
+        </figcaption>
+      </figure>
+      <figure class="qr rv" style="--d:5">
+        <div class="qr-code"><img src="img/qr-linkedin.png" alt="QR de LinkedIn"></div>
+        <figcaption>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.4 2H3.6A1.6 1.6 0 0 0 2 3.6v16.8A1.6 1.6 0 0 0 3.6 22h16.8a1.6 1.6 0 0 0 1.6-1.6V3.6A1.6 1.6 0 0 0 20.4 2ZM8 19H5V9.5h3V19ZM6.5 8.2a1.7 1.7 0 1 1 0-3.5 1.7 1.7 0 0 1 0 3.5ZM19 19h-3v-4.6c0-1.1 0-2.5-1.5-2.5S12.8 13 12.8 14.3V19h-3V9.5h2.8v1.3a3.1 3.1 0 0 1 2.8-1.5c3 0 3.6 2 3.6 4.6V19Z"/></svg>
+          <span><b>LinkedIn</b>Síguenos</span>
+        </figcaption>
+      </figure>
+      <figure class="qr rv" style="--d:6">
+        <div class="qr-code"><img src="img/qr-instagram.png" alt="QR de Instagram"></div>
+        <figcaption>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4ZM17.3 5.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4ZM21.9 7.9a5.8 5.8 0 0 0-1.6-4.2 5.8 5.8 0 0 0-4.2-1.6C14.5 2 9.5 2 7.9 2.1a5.8 5.8 0 0 0-4.2 1.6 5.8 5.8 0 0 0-1.6 4.2C2 9.5 2 14.5 2.1 16.1a5.8 5.8 0 0 0 1.6 4.2 5.8 5.8 0 0 0 4.2 1.6c1.6.1 6.6.1 8.2 0a5.8 5.8 0 0 0 4.2-1.6 5.8 5.8 0 0 0 1.6-4.2c.1-1.6.1-6.6 0-8.2Zm-2.2 10a3.3 3.3 0 0 1-1.9 1.9c-1.3.5-4.4.4-5.8.4s-4.5.1-5.8-.4a3.3 3.3 0 0 1-1.9-1.9c-.5-1.3-.4-4.4-.4-5.8s-.1-4.5.4-5.8a3.3 3.3 0 0 1 1.9-1.9c1.3-.5 4.4-.4 5.8-.4s4.5-.1 5.8.4a3.3 3.3 0 0 1 1.9 1.9c.5 1.3.4 4.4.4 5.8s.1 4.5-.4 5.8Z"/></svg>
+          <span><b>Instagram</b>Síguenos</span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ENCUESTA DE SATISFACCIÓN -->
+<section class="screen" id="s-enc" data-label="Encuesta">
+  <header class="top rv">
+    <div class="brand"><img src="img/nxtep.png" alt="NXTEP"><span class="sep"></span><img src="img/ptw-h.png" alt="Perú Tech Week 2026"></div>
+    <div class="live opill"><i></i>Gracias por venir</div>
+  </header>
+  <div class="fol-body">
+    <h2 class="fol-title enc-title rv" style="--d:1">Cuéntanos qué te pareció<br><span class="gbox">este evento</span></h2>
+    <p class="fol-sub rv" style="--d:2">Tu opinión nos importa y nos ayuda a seguir mejorando</p>
+    <div class="qrs">
+      <figure class="qr rv" style="--d:3">
+        <div class="qr-code qr-big"><img src="img/qr-encuesta.png" alt="QR de la encuesta de satisfacción"></div>
+        <figcaption><span><b>Escanea el código</b>Encuesta de satisfacción</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<nav class="dots" aria-label="Pantallas"></nav>
+
+
+<script>
+(function(){
+  const screens=[...document.querySelectorAll('.screen')];
+  const dots=document.querySelector('.dots');
+  let active=0;
+
+  screens.forEach((s,i)=>{
+    const b=document.createElement('button');
+    b.setAttribute('aria-label',s.dataset.label);
+    b.title=s.dataset.label;
+    b.onclick=()=>go(i);
+    dots.appendChild(b);
+  });
+
+  function go(i){
+    i=Math.max(0,Math.min(screens.length-1,i));
+    screens[i].scrollIntoView({behavior:'smooth'});
+  }
+
+  // Pasos dentro de una pantalla: cada clic (o flecha) avanza un paso; al terminar, pasa de pantalla
+  const steppers={};
+  function stepper(id,min,max,render){
+    const st={min,max,cur:min,set(n){st.cur=Math.max(min,Math.min(max,n));render(st.cur)}};
+    steppers[screens.indexOf(document.getElementById(id))]=st;
+    return st;
+  }
+  // Speakers: uno por uno
+  const spScreen=document.getElementById('s2');
+  const cards=[...spScreen.querySelectorAll('.spk')],hint=spScreen.querySelector('.sp-hint');
+  stepper('s2',0,cards.length,n=>{
+    cards.forEach((c,j)=>c.classList.toggle('shown',j<n));
+    hint.classList.toggle('done',n===cards.length);
+  });
+  // Preguntas: una a la vez
+  const qScreen=document.getElementById('s2c'),qs=[...qScreen.querySelectorAll('.q')];
+  const qNum=qScreen.querySelector('.q-num'),qCat=qScreen.querySelector('.q-cat'),qTicks=[...qScreen.querySelectorAll('.q-steps i')];
+  stepper('s2c',1,qs.length,n=>{
+    qs.forEach((q,j)=>{q.classList.toggle('on',j===n-1);q.classList.toggle('past',j<n-1)});
+    qTicks.forEach((t,j)=>t.classList.toggle('on',j<n));
+    qNum.textContent=String(n).padStart(2,'0');qCat.textContent=qs[n-1].dataset.cat;
+  });
+  steppers[screens.indexOf(qScreen)].set(1);
+  // Cronómetro de la dinámica 1: 3:00 → 0:00, rojo parpadeando 5 s y se reinicia
+  const tBox=document.querySelector('#s4 .timer'),tNum=document.getElementById('timer-num'),tBtn=document.getElementById('timer-btn');
+  const T_TOTAL=180000;let tLeft=T_TOTAL,tEnd=0,tInt=0,tReset=0;
+  const fmt=ms=>{const s=Math.ceil(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+  function tTick(){
+    tLeft=Math.max(0,tEnd-Date.now());tNum.textContent=fmt(tLeft);
+    if(tLeft>0)return;
+    clearInterval(tInt);tBox.classList.remove('running');tBox.classList.add('done');
+    tReset=setTimeout(()=>{tBox.classList.remove('done');tLeft=T_TOTAL;tNum.textContent=fmt(tLeft);tBtn.setAttribute('aria-label','Iniciar cronómetro')},5000);
+  }
+  function tToggle(){
+    if(tBox.classList.contains('done'))return;
+    if(tBox.classList.contains('running')){clearInterval(tInt);tLeft=Math.max(0,tEnd-Date.now());tBox.classList.remove('running');tBtn.setAttribute('aria-label','Reanudar cronómetro')}
+    else{tEnd=Date.now()+tLeft;tBox.classList.add('running');tBtn.setAttribute('aria-label','Pausar cronómetro');tInt=setInterval(tTick,100);tTick()}
+  }
+  tBtn.addEventListener('click',e=>{e.stopPropagation();tToggle();tBtn.blur()});
+
+  function next(){const st=steppers[active];if(st&&st.cur<st.max)st.set(st.cur+1);else go(active+1)}
+  function prev(){const st=steppers[active];if(st&&st.cur>st.min)st.set(st.cur-1);else go(active-1)}
+  // Clic en speakers, resumen y preguntas = siguiente
+  ['s2','s2b','s2c'].forEach(id=>document.getElementById(id).addEventListener('click',next));
+
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        const i=screens.indexOf(e.target);
+        const st=steppers[i];
+        if(st&&active!==i)st.set(active>i?st.max:st.min); // volviendo desde después: último paso
+        active=i;
+        e.target.classList.add('is-in');
+        [...dots.children].forEach((d,j)=>d.classList.toggle('on',j===i));
+      }else{
+        e.target.classList.remove('is-in');
+      }
+    });
+  },{threshold:.55});
+  screens.forEach(s=>io.observe(s));
+
+  // Ver una sola pantalla (para capturas): index.html?solo=2
+  const solo=+new URLSearchParams(location.search).get('solo');
+  if(solo){screens.forEach((s,i)=>{if(i!==solo-1)s.style.display='none';else s.classList.add('is-in')});active=solo-1;const st=steppers[active],k=+new URLSearchParams(location.search).get('step');if(st)st.set(k||st.min)}
+
+  // Abrir directo en una pantalla: index.html#s3
+  if(location.hash){
+    const s=document.querySelector(location.hash);
+    if(s){document.documentElement.style.scrollBehavior='auto';s.scrollIntoView();document.documentElement.style.scrollBehavior=''}
+  }
+
+  // Teclado y clicker de presentación
+  addEventListener('keydown',e=>{
+    const k=e.key;
+    if(['ArrowDown','ArrowRight','PageDown',' '].includes(k)){e.preventDefault();next()}
+    else if(['ArrowUp','ArrowLeft','PageUp'].includes(k)){e.preventDefault();prev()}
+    else if(k==='Home'){e.preventDefault();go(0)}
+    else if(k==='End'){e.preventDefault();go(screens.length-1)}
+    else if(/^[1-9]$/.test(k)){go(+k-1)}
+    else if(k==='f'||k==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}
+    else if(k==='h'||k==='H'){document.body.classList.toggle('clean')}
+    else if((k==='p'||k==='P')&&screens[active].id==='s4'){tToggle()}
+  });
+
+  // Ocultar el cursor cuando no se mueve
+  let t;
+  addEventListener('mousemove',()=>{
+    document.body.classList.remove('no-cursor');
+    clearTimeout(t);t=setTimeout(()=>document.body.classList.add('no-cursor'),2000);
+  });
+
+  // Red de nodos (identidad PTW: rojo + azul). Canvas propio, sin dependencias,
+  // al estilo de los "links" de tsParticles / particles.js.
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const COLORS=['239,75,47','37,99,235','37,99,235','170,178,196'];
+  const nets=[];
+  function makeNet(el,count){
+    const cv=document.createElement('canvas');el.appendChild(cv);
+    const ctx=cv.getContext('2d');
+    const n={el,cv,ctx,count,pts:[],w:0,h:0};
+    n.resize=()=>{
+      const dpr=Math.min(devicePixelRatio||1,2);
+      n.w=el.clientWidth;n.h=el.clientHeight;
+      cv.width=n.w*dpr;cv.height=n.h*dpr;cv.style.width=n.w+'px';cv.style.height=n.h+'px';
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      if(!n.pts.length){
+        for(let i=0;i<count;i++)n.pts.push({
+          x:Math.random()*n.w,y:Math.random()*n.h,
+          vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,
+          r:1.4+Math.random()*3.2,c:COLORS[i%COLORS.length]
+        });
+      }
+    };
+    n.resize();nets.push(n);
+  }
+  function draw(n){
+    const {ctx,pts,w,h}=n,D=Math.min(170,Math.max(110,w/7));
+    ctx.clearRect(0,0,w,h);
+    for(let i=0;i<pts.length;i++){
+      const a=pts[i];
+      for(let j=i+1;j<pts.length;j++){
+        const b=pts[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);
+        if(d<D){
+          ctx.strokeStyle=`rgba(${a.c},${(1-d/D)*.6})`;ctx.lineWidth=1;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        }
+      }
+    }
+    for(const p of pts){
+      ctx.fillStyle=`rgba(${p.c},.95)`;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+      if(p.r>3.6){ctx.fillStyle=`rgba(${p.c},.22)`;ctx.beginPath();ctx.arc(p.x,p.y,p.r*2.6,0,Math.PI*2);ctx.fill()}
+    }
+  }
+  function step(){
+    for(const n of nets){
+      for(const p of n.pts){
+        p.x+=p.vx;p.y+=p.vy;
+        if(p.x<0||p.x>n.w)p.vx*=-1;
+        if(p.y<0||p.y>n.h)p.vy*=-1;
+      }
+      draw(n);
+    }
+    requestAnimationFrame(step);
+  }
+  makeNet(document.getElementById('net-tr'),70);
+  makeNet(document.getElementById('net-bl'),55);
+  addEventListener('resize',()=>nets.forEach(n=>n.resize()));
+  nets.forEach(draw);
+  if(!reduce)requestAnimationFrame(step);
+})();
+</script>
+</body>
+</html>
